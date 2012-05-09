@@ -1,4 +1,6 @@
 BSMR-in-Multihop-Wireless-Networks
 ==================================
 
-Simulating the BSMR algorithm using java swing
+BSMR: Byzantine-Resilient Secure Multicast Routing 
+
+In this project we are simulating the BSMR algorithm using java swing
