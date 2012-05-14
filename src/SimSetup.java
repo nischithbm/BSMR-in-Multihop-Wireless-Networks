@@ -266,21 +266,21 @@ class SimSetup extends JFrame implements ActionListener, ItemListener{
 			
 			str = jtxt_nwSize.getText();
 			if(str.equals("")){
-				str = "20";
+				str = "40";
 			}
 			Node.nwSize = Integer.parseInt(str);
 			
 			
 			str = jtxt_trRange.getText();
 			if(str.equals("")){
-				str = "20";
+				str = "50";
 			}
 				
 			Node.tRange = Integer.parseInt(str);
 			
 			
 			
-			Main.mainFrame.jbtn_startSim.setEnabled(true);
+			Main.mainFrame.jbtn_genTplgy.setEnabled(true);
 			
 			this.dispose();
 	    }

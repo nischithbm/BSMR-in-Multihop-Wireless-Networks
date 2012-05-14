@@ -6,29 +6,13 @@ import packet_pkg.*;
 //Importing libraries
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
-import java.math.BigInteger;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-
-
-
-	// For Drawing Arrow
-import static java.awt.geom.AffineTransform.getRotateInstance;
-import static java.awt.geom.AffineTransform.getTranslateInstance;
-
-
 
 public class Main extends JFrame implements ActionListener, ItemListener, ChangeListener{
 	
@@ -50,18 +34,18 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 	
 	public Node n1,n2,n3,n4;
 
-	JToggleButton jtbtn_range;
+	JToggleButton jtbtn_range,jtbtn_data,jtbtn_blkHole;
 	
-	JButton jbtn_createNode,jbtn_ntwTplgy,jbtn_getReachableNodes,jbtn_simSetup,jbtn_startSim,jbtn_stopSim,jbtn_exit;
-	JButton jbtn_startData,jbtn_stopData,jbtn_monitorNode;
+	JButton jbtn_createNode,jbtn_getReachableNodes,jbtn_simSetup,jbtn_genTplgy,jbtn_exit;
+	JButton jbtn_monitorNode;
 	
-	JButton jbtn_rreq;
+	JButton jbtn_rreq,jbtn_treePrune;
 	
 	
 	JComboBox jcbx_selNode,jc2;
 	
 	JSlider jsldr_movNodX,jsldr_movNodY,jsldr_trustFactr; 
-	
+	JLabel jlb_posX,jlb_posY;
 	
 	Color btn_bgColor = Color.blue;
 	Color btn_fgColor = Color.white;
@@ -94,28 +78,22 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		
 		c=this.getContentPane();
 		c.setBackground(Color.white);
-		c.setLayout(null);
-		this.setIconImage(Toolkit.getDefaultToolkit().getImage("images/livewire2.gif"));
+		//c.setLayout(null);
+		//this.setIconImage(Toolkit.getDefaultToolkit().getImage("images/livewire2.gif"));
 	   	//this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-
 
 		addMenuItems();
 		addControls();
 	   
 		showTopology();
 		
-		
-		
-		
 		startThread(tplgyThread,50);
 
-
-		for(int m=0;m<80;m++){
-			for(int n=0;n<80;n++){
+		for(int m=0;m<100;m++){
+			for(int n=0;n<100;n++){
 				placedPos[m][n]=0;
 			}
 		}
-	   		
 	}
 	
 	public void addMenuItems(){
@@ -139,19 +117,25 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 	
 	public void addControls(){
 	    jbtn_createNode=new JButton("Create Node");
-	    jbtn_ntwTplgy=new JButton("Draw Network Topology");
+	   
 	    jtbtn_range=new JToggleButton("Show Node Range");
-	    jbtn_getReachableNodes=new JButton("Get Reachable Nodes");
+	    
 	    jbtn_simSetup=new JButton("Simulation Setup");
-	    jbtn_startSim=new JButton("Start Simulation");
-	    jbtn_stopSim=new JButton("Stop Simulation");
+	    jbtn_genTplgy=new JButton("Generate Topology");
+	  
+	    jtbtn_data=new JToggleButton("Start Sending Data");
+	    
 	    jcbx_selNode=new JComboBox();
 	    jbtn_monitorNode=new JButton("Monitor Node status");
 	    jbtn_rreq=new JButton("RREQ");
-	    jbtn_startData=new JButton("Start Sending Data");
-	    jbtn_stopData=new JButton("Stop Sending Data");
+	    jbtn_treePrune=new JButton("Tree Prune");
+	    jtbtn_blkHole = new JToggleButton("Make it Black Hole");
+	    
 	    jbtn_exit=new JButton("EXIT");
 	    
+	    
+	    jlb_posX = new JLabel("pos X");
+	    jlb_posY = new JLabel("pos Y");
 	    
 	    // Specify display attributes
 	    btn_bgColor = Color.blue;
@@ -163,29 +147,13 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 	    jbtn_createNode.setFont(new Font(null,Font.BOLD,btn_fontSize));
 	    jbtn_createNode.addActionListener(this);
 	  
-		
-		
-		
-		
-		jbtn_ntwTplgy.setBackground(btn_bgColor);
-		jbtn_ntwTplgy.setForeground(btn_fgColor);
-		jbtn_ntwTplgy.setFont(new Font(null,Font.BOLD,btn_fontSize));
-		jbtn_ntwTplgy.addActionListener(this);
-		
-		
+	    
+
+
 		jtbtn_range.setBackground(btn_bgColor);
 		jtbtn_range.setForeground(btn_fgColor);
 		jtbtn_range.setFont(new Font(null,Font.BOLD,btn_fontSize));
 		jtbtn_range.addItemListener(this);
-		
-		
-		jbtn_getReachableNodes.setBackground(btn_bgColor);
-		jbtn_getReachableNodes.setForeground(btn_fgColor);
-		jbtn_getReachableNodes.setFont(new Font(null,Font.BOLD,btn_fontSize));
-		jbtn_getReachableNodes.addActionListener(this);
-		
-		
-		
 		
 		
 		jbtn_simSetup.setBackground(Color.black);
@@ -194,18 +162,19 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		jbtn_simSetup.addActionListener(this);
 		
 		
-		jbtn_startSim.setBackground(Color.black);
-		jbtn_startSim.setForeground(btn_fgColor);
-		jbtn_startSim.setFont(new Font(null,Font.BOLD,btn_fontSize));
-		jbtn_startSim.setEnabled(false);
-		jbtn_startSim.addActionListener(this);
+		jbtn_genTplgy.setBackground(Color.black);
+		jbtn_genTplgy.setForeground(btn_fgColor);
+		jbtn_genTplgy.setFont(new Font(null,Font.BOLD,btn_fontSize));
+		jbtn_genTplgy.setEnabled(false);
+		jbtn_genTplgy.addActionListener(this);
 
-		jbtn_stopSim.setBackground(Color.red);
-		jbtn_stopSim.setForeground(Color.white);
-		jbtn_stopSim.setFont(new Font(null,Font.BOLD,btn_fontSize));
-		jbtn_stopSim.setEnabled(false);
-		jbtn_stopSim.addActionListener(this);
 		
+		
+		jtbtn_data.setBackground(btn_bgColor);
+		jtbtn_data.setForeground(btn_fgColor);
+		jtbtn_data.setFont(new Font(null,Font.BOLD,btn_fontSize));
+		jtbtn_data.setEnabled(false);
+		jtbtn_data.addItemListener(this);
 		
 		jcbx_selNode.setBackground(btn_bgColor);
    		jcbx_selNode.setFont(new Font(null,Font.BOLD,btn_fontSize));
@@ -219,26 +188,27 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
    		jbtn_monitorNode.setEnabled(false);
    		jbtn_monitorNode.addActionListener(this);
 		
+   		
+   		jbtn_treePrune.setBackground(btn_bgColor);
+   		jbtn_treePrune.setForeground(Color.white);
+   		jbtn_treePrune.setFont(new Font(null,Font.BOLD,btn_fontSize));
+   		jbtn_treePrune.setEnabled(false);
+   		jbtn_treePrune.addActionListener(this);
+		
+   		
    		jbtn_rreq.setBackground(btn_bgColor);
    		jbtn_rreq.setForeground(Color.gray);
    		jbtn_rreq.setFont(new Font(null,Font.BOLD,btn_fontSize));
    		jbtn_rreq.setEnabled(false);
    		jbtn_rreq.addActionListener(this);
 		
-
-		
-   		jbtn_startData.setBackground(btn_bgColor);
-		jbtn_startData.setForeground(btn_fgColor);
-		jbtn_startData.setFont(new Font(null,Font.BOLD,btn_fontSize));
-		jbtn_startData.setEnabled(false);
-		jbtn_startData.addActionListener(this);
-		
-		jbtn_stopData.setBackground(btn_bgColor);
-		jbtn_stopData.setForeground(btn_fgColor);
-		jbtn_stopData.setFont(new Font(null,Font.BOLD,btn_fontSize));
-		jbtn_stopData.setEnabled(false);
-		jbtn_stopData.addActionListener(this);
-		
+   		
+   		jtbtn_blkHole.setBackground(btn_bgColor);
+   		jtbtn_blkHole.setForeground(btn_fgColor);
+   		jtbtn_blkHole.setFont(new Font(null,Font.BOLD,btn_fontSize));
+   		jtbtn_blkHole.setEnabled(false);
+   		jtbtn_blkHole.addItemListener(this);
+			
 
    		jbtn_exit.setBackground(Color.red);
 		jbtn_exit.setForeground(btn_fgColor);
@@ -251,39 +221,38 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
    		
    		
    		
-   		
    		// Specify button locations
-		btn_xPos=10;	//950
-		btn_yPos=20;
+		btn_xPos=10;
+		btn_yPos=10;
 		btn_width=150;
 		btn_height=25;
 		
-		//btn_xPos=500;	//950
-		//btn_yPos=50;
-		//btn_width=220;
-		//btn_height=35;
-		
    		
 		jbtn_createNode.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
-   		jbtn_ntwTplgy.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
    		jtbtn_range.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_yPos+=btn_height+5;
    		
-   		jbtn_getReachableNodes.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);	btn_yPos+=btn_height+5;
    		jbtn_simSetup.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
-   		jbtn_startSim.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
-   		jbtn_stopSim.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_yPos+=btn_height+5;
-   		
-   		
+   		jbtn_genTplgy.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
+
+   		jtbtn_data.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
    		jcbx_selNode.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_yPos+=btn_height+5;
    		jbtn_monitorNode.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
+   		
    		jbtn_rreq.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_yPos+=btn_height+5;
+   		jbtn_treePrune.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
    		
-   		jbtn_startData.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
-   		jbtn_stopData.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
-   		
+   		jtbtn_blkHole.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
+   		 		
    		jbtn_exit.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_yPos+=btn_height+5;
    		
    		
+   		btn_xPos=10;	
+		btn_yPos=600;
+		btn_width=50;
+		btn_height=25;
+		
+   		jlb_posX.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_xPos+=btn_width+20;
+   		jlb_posY.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				
    		
    		
    		
@@ -319,26 +288,26 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
    		
    		// Add buttons to the frame
    		this.add(jbtn_createNode);
-   		this.add(jbtn_ntwTplgy);
    		this.add(jtbtn_range);
-   		this.add(jbtn_getReachableNodes);
    		
    		this.add(jbtn_simSetup);
-   		this.add(jbtn_startSim);
-   		this.add(jbtn_stopSim);
+   		this.add(jbtn_genTplgy);
+   		this.add(jtbtn_data);
+   		
    		
    		this.add(jcbx_selNode);
    		this.add(jbtn_monitorNode);
    		this.add(jbtn_rreq);
-   		
-   		this.add(jbtn_startData);
-   		this.add(jbtn_stopData);
+   		this.add(jbtn_treePrune);
+   		this.add(jtbtn_blkHole);
    		this.add(jbtn_exit);
    		
    		
    		this.add(jsldr_movNodX);
    		this.add(jsldr_movNodY);
    		
+   		this.add(jlb_posX);
+   		this.add(jlb_posY);
    		
 	}
 	
@@ -349,7 +318,7 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		tplgyFrame=new JFrame("Network Topology");
 		tplgyFrame.getContentPane().add(tp);
 		tplgyFrame.setBackground(Color.white);
-		tplgyFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		tplgyFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		tplgyFrame.setBounds(210,10,950,650);
 		tplgyFrame.setResizable(false);
 		tplgyFrame.setVisible(true);
@@ -357,27 +326,24 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 	
 
 
-	  public static void main(String[] args) {
-		new SplashScreen();
+	public static void main(String[] args) {
+		//new SplashScreen();
 
 		mainFrame = new Main();
 		mainFrame.setIconImage(Toolkit.getDefaultToolkit().getImage("images/livewire2.gif"));
 		mainFrame.setTitle("BSMR in Multihop Wireless Networks");
-		mainFrame.setBounds(5, 5, 200, 700); // mainFrame.setBounds(50,20,1200,800);
+		mainFrame.setBounds(5, 5, 200, 700); 	// mainFrame.setBounds(50,20,1200,800);
 
 		UIManager.LookAndFeelInfo lookAndFeels[] = UIManager.getInstalledLookAndFeels();
 
 		try {
 			UIManager.setLookAndFeel(lookAndFeels[1].getClassName());
 			SwingUtilities.updateComponentTreeUI(mainFrame);
-		} catch (Exception e) {
-		}
+		} catch (Exception e) {	}
 
 		mainFrame.setResizable(false);
 		mainFrame.setLayout(null);
-
 		mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
 		mainFrame.setVisible(true);
 	}
   
@@ -390,7 +356,6 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 			int midX = (int)(xPosArray.length)/2;
 			int midY = (int)(yPosArray.length)/2;
 
-			
 			int repeat=0;
 			
 			// Place the source at the center
@@ -444,10 +409,14 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 						jcbx_selNode.addItem(n1.getIpAddress());
 						
 						
+						
+						
+						
 						k++;
 					}
 					if(repeat>10){
-						System.out.println("cant place more nodes..");
+						System.out.println(k+" Trying to place nodes more closely..");
+						placeNodesCloser(k);
 						break;
 					}
 					
@@ -458,7 +427,61 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		}
 	  
 	
-	  
+	  public void placeNodesCloser(int p){
+		  int repeat=0;
+			
+		  int i=0;
+		  int j=0;
+		  int midX = (int)(xPosArray.length)/2;
+		  int midY = (int)(yPosArray.length)/2;
+
+		  
+		  i = midX;
+		  j = midY;
+			 
+		  for(int k=p;k<Node.nwSize;){
+				boolean canPlace = false;
+				repeat++;
+				//Generate Random indexes i and j
+				if(k<5){
+					 i = Main.random(midX-3,midX+3);
+					 j = Main.random(midY-3,midY+3);
+				}
+				else if(k<10){
+					 i = Main.random(midX-5,midX+5);
+					 j = Main.random(midY-5,midY+5);
+				}
+				
+				else{
+					i = Main.random(xPosArray.length);
+					j = Main.random(yPosArray.length);
+				}
+				if(placedPos[i][j]==1){
+					// check if place is already occupied
+				 }
+				 else{
+					 canPlace = true;
+				 }
+				 
+				if(canPlace){
+					placedPos[i][j]=1;
+					repeat=0;
+					n1 = new Node(NodeType.NON_MEMBER_NODE,xPosArray[i],yPosArray[j]);
+				
+				//	System.out.println("ip="+n1.getIpAddress());
+					jcbx_selNode.addItem(n1.getIpAddress());
+					
+					
+					k++;
+				}
+				if(repeat>10){
+					System.out.println("cant place more nodes..");
+					break;
+				}
+				
+			}
+			
+	  }
 	  
 	  
 @Override
@@ -466,12 +489,6 @@ public void actionPerformed(ActionEvent ae) {
 	
 	if(ae.getSource()==jbtn_createNode)
 	{
-
-
-		//int xPosArray[] = {350,100,414,200,200,300,100,500,250,150,700,500,250,450,350,700,650,800,600};
-		//int yPosArray[] = {300,100,180,455,400,100,400,100,300,220,550,500,570,400,750,150,350,500,450};
-		
-		
 		int i=0,j=0;
 		while(true){
 			boolean canPlace = false;	
@@ -480,7 +497,7 @@ public void actionPerformed(ActionEvent ae) {
 			 j = Main.random(yPosArray.length);
 
 			 
-			 // check if a;ready placed
+			 // check if already placed
 			 if(placedPos[i][j]==1){
 				
 			 }
@@ -499,7 +516,6 @@ public void actionPerformed(ActionEvent ae) {
 				n1 = new Node(NodeType.NON_MEMBER_NODE,xPosArray[i],yPosArray[j]);
 				//System.out.println("ip="+n1.getIpAddress());
 				jcbx_selNode.addItem(n1.getIpAddress());
-				//tplgyFrame.repaint();
 				break;
 			}
 			
@@ -507,117 +523,31 @@ public void actionPerformed(ActionEvent ae) {
 		}
 
 
-
 		for(int i1=0;i1<Node.totalNodes;i1++){
 			NodeTable.getNode(i1+1).findReachableNodes();
 		}
 
-
 		
     }
-	
-	
-	if(ae.getSource()==jbtn_ntwTplgy){
-		tplgyFrame.setVisible(true);
-	}
-	
-	
-	if(ae.getSource()==jbtn_startData){
-		jbtn_stopData.setEnabled(true);
-		
-		dataPktThread = new Timer("dataPktThread");
-		startThread(dataPktThread,2 * 1000);
 
-		//LineChart.chart();
-	}
-	
-	
-	if(ae.getSource()==jbtn_stopData){
-		stopThread(dataPktThread);	
-		jbtn_stopData.setEnabled(false);
-	}
-	
 
-	if(ae.getSource()==jbtn_getReachableNodes)
-	{
-		for(int i1=0;i1<Node.totalNodes;i1++){
-			NodeTable.getNode(i1+1).findReachableNodes();
-		}
-		
-		
-		/*
-		
-		
-		if(NodeTable.getNode(1).canSend()){
-			System.out.println("I will send");
-		}
-		else{
-			System.out.println("I will Not send");
-		}
-		
-		//NodeTable.getNode(1).multicastData("Hello this is 1st message");
-		//NodeTable.getNode(2).multicastData("Hai from node 2");
-		//NodeTable.getNode(3).multicastData("Hellooo from node 3");
-		
-		*/
-
-    }
-	
 	
 	if (ae.getSource() == jbtn_simSetup) {
 		jbtn_simSetup.setEnabled(false);
 		SimSetup simSetup = new SimSetup();
-		jbtn_startSim.setEnabled(true);
-		jbtn_startData.setEnabled(true);
+		//jbtn_startSim.setEnabled(true);
 	}
 	
-	if (ae.getSource() == jbtn_startSim) {
-		jbtn_startSim.setEnabled(false);
-		System.out.println("Network Size = " + Node.nwSize);
-
+	if (ae.getSource() == jbtn_genTplgy) {
+		jbtn_genTplgy.setEnabled(false);
+		
 		genInitialTopology();
 			
 		startThread(grpHelloThread, 9000);
 		startThread(rchbltyThread, 9000);
 
-		jbtn_stopSim.setEnabled(true);
-		jbtn_startData.setEnabled(true);
-	}
-	
-	
-	if(ae.getSource()==jbtn_stopSim){
-		// update simulation summary
-		
-		
-		
-		// clear all threads..
-		stopThread(dataPktThread);			// 	Stop sending data packets
-		stopThread(grpHelloThread);	
-		stopThread(mRatePktThread);			
-		
-		//this.jcbx_selNode.removeAllItems();
-		resetControls();
-		
-		
-		for(int k=0;k<Node.totalNodes;k++){
-			// clear all threads in each node..
-			Node tmp = NodeTable.getNode(k+1);
-			
-			//tmp.stopThread(tmp.bufferThread);
-			tmp.stopThread(tmp.beaconThread);
-			tmp.stopThread(tmp.stickToMeThread);
-			tmp.stopThread(tmp.beaconChkThread);
-			tmp.stopThread(tmp.connThread);
-			tmp.stopThread(tmp.RA_Timer);
-			tmp.stopThread(tmp.StickToMe_Timer);
-			
-			tmp.setNodeMonitorVisibility(false);
-		}
-		
-		//Node.reset();
-		
-		//NodeTable.nodeTable.clear();
-		jbtn_simSetup.setEnabled(true);
+		jtbtn_data.setEnabled(true);
+		//jbtn_startData.setEnabled(true);
 	}
 	
 		
@@ -636,7 +566,8 @@ public void actionPerformed(ActionEvent ae) {
 	    	  
 	    	  jsldr_movNodX.setEnabled(false);
 	    	  jsldr_movNodY.setEnabled(false);
-	    	  
+	    	  jbtn_treePrune.setEnabled(false);
+	    	  this.jtbtn_blkHole.setEnabled(false);
 			}
 	      else{
 	    	  jbtn_monitorNode.setForeground(Color.white);
@@ -648,13 +579,31 @@ public void actionPerformed(ActionEvent ae) {
     		  if(!NodeTable.getNode(indx).Connected){
     			  jbtn_rreq.setForeground(Color.white);
         		  jbtn_rreq.setEnabled(true);
+        		  jbtn_treePrune.setEnabled(false);
     		  }
     		  else{
-    			  jbtn_rreq.setForeground(Color.gray);
-    			  jbtn_rreq.setEnabled(false);
+    			  if(NodeTable.getNode(indx).getNodeType()==NodeType.TREE_NODE){
+    				  jbtn_rreq.setForeground(Color.white);
+            		  jbtn_rreq.setEnabled(true);
+            		  jbtn_treePrune.setEnabled(false);
+    			  }
+    			  else{
+    				  jbtn_rreq.setForeground(Color.gray);
+    				  jbtn_rreq.setEnabled(false);
+    			  }
+    			  
+    			  if(chkCanPrune(indx)){
+    				  jbtn_treePrune.setEnabled(true);
+    			  }
+    			  else{
+    				  jbtn_treePrune.setEnabled(false);
+    			  }
     		  }
     		  
-			    	 // if(NodeTable.getNode(indx).getNodeType() == NodeType.NON_MEMBER_NODE){
+
+	    	  this.jtbtn_blkHole.setEnabled(true); 
+    		  
+    		  // if(NodeTable.getNode(indx).getNodeType() == NodeType.NON_MEMBER_NODE){
 			    		  
 			    	 // }
 			    	 // else{
@@ -666,6 +615,8 @@ public void actionPerformed(ActionEvent ae) {
 	    	  jsldr_movNodY.setValue(NodeTable.getNode(indx).getPosY());
 	    	  jsldr_movNodX.setEnabled(true);
 	    	  jsldr_movNodY.setEnabled(true);
+	    	  
+	    	  
 	    	  
 	      }
 	}
@@ -694,14 +645,31 @@ public void actionPerformed(ActionEvent ae) {
 	
 	if(ae.getSource()==jbtn_rreq)
 	{
-		
 		int indx=(Integer)jcbx_selNode.getSelectedIndex();
-	
-		NodeTable.getNode(indx).attempts =0;
-		NodeTable.getNode(indx).initiateRouteDiscovery();
-		NodeTable.getNode(indx).Connected = false;		// just to test
+		
+	    if(!NodeTable.getNode(indx).Connected){
+	    	NodeTable.getNode(indx).attempts =0;
+			NodeTable.getNode(indx).initiateRouteDiscovery();
+	    }
+	    else if(NodeTable.getNode(indx).getNodeType()==NodeType.TREE_NODE){
+	    	NodeTable.getNode(indx).setNodeType(NodeType.MEMBER_NODE);
+	    }
 	    jbtn_rreq.setEnabled(false);
     }
+	
+	
+	if(ae.getSource()==jbtn_treePrune){
+		int indx=(Integer)jcbx_selNode.getSelectedIndex();
+		NodeTable.getNode(indx).createSignSend(PacketType.TREE_PRUNE); 
+		
+		NodeTable.getNode(indx).stopThread(NodeTable.getNode(indx).beaconThread);
+		NodeTable.getNode(indx).stopThread(NodeTable.getNode(indx).StickToMe_Timer);
+		
+		
+		NodeTable.getNode(indx).setNodeType(NodeType.NON_MEMBER_NODE);
+		NodeTable.getNode(indx).Connected=false;
+		jbtn_treePrune.setEnabled(false);
+	}
 	
 	
 	if(ae.getSource()==mi_help)
@@ -719,13 +687,6 @@ public void actionPerformed(ActionEvent ae) {
 		NodeTable.getNode(1).createSignSend(PacketType.MRATE);
 		
 		
-		
-		/*int indx=(Integer)jcbx_selNode.getSelectedIndex();
-		NodeTable.getNode(indx).Connected=false;
-		NodeTable.getNode(indx).sendTreePrune();
-		*/
-		
-		
 		/*		// remove comment later
 		if(this.abtUsFrame!=null){
 			this.abtUsFrame.dispose();
@@ -735,10 +696,6 @@ public void actionPerformed(ActionEvent ae) {
 	}
 	
 	
-	/*if(ae.getSource()==mi_exit){
-		// Menu Item Exit
-		System.exit(0);
-	}*/
 	
 	if(ae.getSource()==jbtn_exit || ae.getSource()==mi_exit){
 		System.exit(0);
@@ -746,6 +703,7 @@ public void actionPerformed(ActionEvent ae) {
     }
 	
 }
+
 
 	@Override
 	public void itemStateChanged(ItemEvent ie) {
@@ -759,7 +717,32 @@ public void actionPerformed(ActionEvent ae) {
 				jtbtn_range.setText("Show Node Range");
 			}
 		}
+		
+		if (ie.getSource() == jtbtn_data) {
+			if (jtbtn_data.isSelected()) {
+				dataPktThread = new Timer("dataPktThread");
+				startThread(dataPktThread,2 * 1000);
+				jtbtn_data.setText("Stop Sending Data");
+			} else {
+				stopThread(dataPktThread);	
+				jtbtn_data.setText("Start Sending Data");
+			}
+		}
+		
+		if (ie.getSource() == jtbtn_blkHole) {
+			if (jtbtn_blkHole.isSelected()) {
+				int indx=(Integer)jcbx_selNode.getSelectedIndex();
+				NodeTable.getNode(indx).setAttackType(AttackType.BLACK_HOLE);
+				jtbtn_blkHole.setText("Undo Black Hole");
+				
+			} else {
+				int indx=(Integer)jcbx_selNode.getSelectedIndex();
+				NodeTable.getNode(indx).setAttackType(AttackType.NONE);
+				jtbtn_blkHole.setText("Make it Black Hole");
+			}
+		}
 
+		
 	}
 
 	@Override
@@ -793,7 +776,6 @@ public void actionPerformed(ActionEvent ae) {
 				String curThreadName = Thread.currentThread().getName();
 					
 				if(curThreadName.equals("tplgyThread")){
-					//System.out.println("tp thread");
 					tplgyFrame.repaint();
 				}
 				else if(curThreadName.equals("rchbltyThread")){
@@ -810,24 +792,34 @@ public void actionPerformed(ActionEvent ae) {
 		
 	}
 	
-
-	public void resetControls(){
-			jbtn_startSim.setEnabled(false);
+	
+	public boolean chkCanPrune(int index){
+		// check if it can prune itself
+		boolean flag=false;
 		
-			jbtn_stopSim.setEnabled(false);
+		Node tmpNode = NodeTable.getNode(index);
 		
-	   		jbtn_monitorNode.setEnabled(false);
-	   		
-	   		jbtn_rreq.setEnabled(false);
-	   		
-	   		
-			
-	   		jcbx_selNode.setEnabled(false);
-	   
-	   		
+		if(tmpNode.Connected){
+			if(tmpNode.type==NodeType.SOURCE){
+				flag=false;
+			}
+			else if(tmpNode.type==NodeType.MEMBER_NODE || tmpNode.type==NodeType.TREE_NODE){
+				if(tmpNode.downStreamNodes.size()==0){
+					flag=true;
+				}
+				else{
+					flag=false;
+				}
+			}
+		}
+		else{
+			flag=false;
+		}
 		
+		return flag;
 	}
 	
+
 	public void stopThread(Timer t) {
 		if(t!=null){
 			t.cancel();
@@ -850,14 +842,7 @@ public void actionPerformed(ActionEvent ae) {
 	}
 
 
-	protected void shutdown() {
-	    // To perform any other shutdown tasks
-	    
-		
-	}
 
-	
-	
 
 	// not necessary in final code
 	public void generateValidPositions(){

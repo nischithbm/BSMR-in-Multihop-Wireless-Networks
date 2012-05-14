@@ -21,7 +21,7 @@ public class SplashScreen extends JWindow{
 		this.add(jlb_bg);
 		
 		try {
-			Thread.sleep(2000);
+			Thread.sleep(3500);
 		} catch (InterruptedException e) {
 		}
 		

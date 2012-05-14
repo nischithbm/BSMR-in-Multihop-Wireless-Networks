@@ -102,8 +102,8 @@ public class Node {
 	int groupSeqNo; // Route Freshness ---> higher the Group Sequence No - fresher the route
 
 	//public int treeLevel=999;
-	NodeType type; // Type of the Node
-	AttackType attackType;
+	public NodeType type; // Type of the Node
+	public AttackType attackType;
 
 	int posX;
 	int posY;
@@ -174,8 +174,9 @@ public class Node {
 		this.posX = X;
 		this.posY = Y;
 
-		this.attackType = AttackType.NONE;
-
+		//this.attackType = AttackType.NONE;
+		this.setAttackType(AttackType.NONE);
+		
 		this.initialize();
 
 		NodeTable.addEntry(this);
@@ -185,6 +186,19 @@ public class Node {
 
 	private void initialize() {
 
+		
+
+		this.genCryptKeys();
+		SharedKey.addEntry(this.ipAddress, this.rsaPub);
+		SharedKey.addEntry(this.ipAddress, this.pubKey);
+
+		this.createNodeIpSign();
+		this.createNodeMonitor();
+		this.initThreads();
+
+	}
+
+	public void genTF() {
 		switch (this.attackType) {
 		case NONE:
 			TF = 100;
@@ -198,18 +212,7 @@ public class Node {
 		default:
 			break;
 		}
-
-		this.genCryptKeys();
-		SharedKey.addEntry(this.ipAddress, this.rsaPub);
-		SharedKey.addEntry(this.ipAddress, this.pubKey);
-
-		this.createNodeIpSign();
-		this.createNodeMonitor();
-		this.initThreads();
-
-	}
-
-	public void genTF() {
+		
 		Random randGen = new Random();
 		int k = TF;
 		int l = 100 - TF;
@@ -363,6 +366,11 @@ public class Node {
 	}
 	
 	
+	public void setAttackType(AttackType aTyp){
+		this.attackType = aTyp;
+		this.genTF();		
+		
+	}
 	
 	
 	
@@ -1111,8 +1119,16 @@ public class Node {
 			
 			
 			// this.dumpNodeStatus("Received message by "+this.ipAddress+" : \n" +rcvdMsg);
-			DataPacket pkt = ((DataPacket) pktObj).getClone();
-			multicastPacket(pkt);
+			
+			//if(this.attackType==AttackType.BLACK_HOLE)
+			if(canSend()){
+				DataPacket pkt = ((DataPacket) pktObj).getClone();
+				multicastPacket(pkt);
+			}
+			else{
+				this.dumpNodeStatus("Packet dropped", 4);
+				this.dropPacket();
+			}
 		}
 		if (pktObj.pktType == PacketType.MRATE) {
 			// check drop in data rate
@@ -1145,11 +1161,11 @@ public class Node {
 
 			if (!isHopLessThanPrev(pkt.msgSeqNo, pkt.hops)) {
 				this.dumpNodeStatus("Duplicate found - Packet dropped", 4);
-				this.dropPacket(pkt);
+				this.dropPacket();
 			}
 			else if (this.getIpAddress() == pkt.senderIp) {
 				this.dumpNodeStatus("Packet dropped - to avoid cycles", 4);
-				this.dropPacket(pkt);
+				this.dropPacket();
 			}
 			else if (this.Connected) {
 				// this.dumpNodeStatus("src "+pkt.senderIp);
@@ -1176,7 +1192,7 @@ public class Node {
 
 			if (!isHopLessThanPrev(pkt.msgSeqNo, pkt.hops)) {
 				this.dumpNodeStatus("Duplicate found - Packet dropped", 4);
-				this.dropPacket(pkt);
+				this.dropPacket();
 			}
 			else if (this.getIpAddress() == pkt.destIp) {
 				if(!this.Connected){
@@ -1314,7 +1330,7 @@ public class Node {
 		
 	}
 
-	public void dropPacket(Packet pkt) {
+	public void dropPacket() {
 		this.dropping = 5;
 	}
 
@@ -1544,7 +1560,7 @@ public class Node {
 								processPacket(pktObj); // Process the packet if verification successful
 							} else {
 								dumpNodeStatus("Invalid Packet - Packet Dropped", 3);
-								dropPacket(pktObj); // Drop the packet if verification is unsuccessful
+								dropPacket(); // Drop the packet if verification is unsuccessful
 							}
 	
 						}
@@ -1681,15 +1697,13 @@ public class Node {
 	
 	
 	public boolean canSend() {
+		// to simulate the byzantine attacks
 		Random randGen = new Random();
 
 		int randIndex = randGen.nextInt(100);
 		if (this.distributeTF[randIndex] == 1) {
 			return true;
-		} else if (this.distributeTF[randIndex] == 0) {
-			return false;
-		}
-
+		} 
 		return false;
 	}
 
@@ -1842,12 +1856,10 @@ public class Node {
 
 			treeModel.insertNodeInto((DefaultMutableTreeNode) tmpTreeNode,tmpParentNode, tmpParentNode.getChildCount());
 			
-			nodeMonitorTree.scrollRowToVisible(root.getChildCount());
+			//nodeMonitorTree.scrollRowToVisible(root.getChildCount());
 		} catch (ArrayIndexOutOfBoundsException e) {
-			System.out.println(this.getIpAddress()+":Tree Index out of bound");
-			//if (level > 2) {
-			//	dumpNodeStatus(data, level - 1);
-			//}
+			//System.out.println(this.getIpAddress()+":Tree Index out of bound");
+			
 		}
 	}
 }

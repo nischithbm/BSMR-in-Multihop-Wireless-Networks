@@ -11,6 +11,7 @@ import java.util.Iterator;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import node_pkg.AttackType;
 import node_pkg.Node;
 import node_pkg.NodeTable;
 import node_pkg.NodeType;
@@ -74,23 +75,33 @@ public class Topology extends JPanel{
 			  		}
 			  		
 			  		
-			  		g2d.drawOval(tmpNode.getPosX()-(nodeWidth/2), tmpNode.getPosY()-(nodeWidth/2), nodeWidth, nodeWidth);
-			  		g2d.drawString(""+tmpNode.getIpAddress(), tmpNode.getPosX() - 10 , tmpNode.getPosY() - 10);
-
+			  		
+			  		
 			  	//	g2d.drawString("(" + tmpNode.getPosX() +","+tmpNode.getPosY()+")", tmpNode.getPosX() - 35 , tmpNode.getPosY() + 25);
 			  		
-			  		switch(tmpNode.getNodeType()){
-			  		case SOURCE:
-			  		case MEMBER_NODE:
-			  		case TREE_NODE:
-			  			g2d.fillOval(tmpNode.getPosX()-(nodeWidth/2), tmpNode.getPosY()-(nodeWidth/2), nodeWidth, nodeWidth);
-			  			break;
-			  		case NON_MEMBER_NODE:
-			  			break;
-			  		default:break;
+			  		if(tmpNode.attackType==AttackType.NONE){
+			  			g2d.drawOval(tmpNode.getPosX()-(nodeWidth/2), tmpNode.getPosY()-(nodeWidth/2), nodeWidth, nodeWidth);
+				  		g2d.drawString(""+tmpNode.getIpAddress(), tmpNode.getPosX() - 10 , tmpNode.getPosY() - 10);
+				  		
+				  		switch(tmpNode.getNodeType()){
+				  		case SOURCE:
+				  		case MEMBER_NODE:
+				  		case TREE_NODE:
+				  			g2d.fillOval(tmpNode.getPosX()-((nodeWidth)/2), tmpNode.getPosY()-((nodeWidth)/2), nodeWidth, nodeWidth);
+				  			break;
+				  		case NON_MEMBER_NODE:
+				  			break;
+				  		default:break;
+				  		}
 			  		}
-
-
+			  		else if(tmpNode.attackType==AttackType.BLACK_HOLE){
+				  		g2d.drawOval(tmpNode.getPosX()-( (nodeWidth+2)/2), tmpNode.getPosY()-( (nodeWidth+2)/2), nodeWidth+2, nodeWidth+2);
+			  			g2d.drawOval(tmpNode.getPosX()-((nodeWidth-2)/2), tmpNode.getPosY()-((nodeWidth-2)/2), nodeWidth-2, nodeWidth-2);
+				  		g2d.drawString(""+tmpNode.getIpAddress(), tmpNode.getPosX() - 10 , tmpNode.getPosY() - 10);
+				  		g2d.fillOval(tmpNode.getPosX()-((nodeWidth-2)/2), tmpNode.getPosY()-((nodeWidth-2)/2), nodeWidth-2, nodeWidth-2);
+			  			
+			  		}
+			  		
 			  		if(tmpNode.receiving>0){
 			  			g2d.setColor(Color.white);
 			  			g2d.setColor(Color.green);
