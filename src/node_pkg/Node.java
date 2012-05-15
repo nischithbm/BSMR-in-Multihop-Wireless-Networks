@@ -61,8 +61,8 @@ public class Node {
 
 	
 	// Simulation Results
-	public static int pSent;		// Total no of packets sent by the source node
-	public int pRecvd;				// Total no of packets received by each member
+	public static int pSent=0;		// Total no of packets sent by the source node
+	public int pRecvd=0;			// Total no of packets received by each member
 	
 	
 	public static int maxNodes = 500; // Maximum number of nodes permitted
@@ -122,11 +122,12 @@ public class Node {
 
 	// Reliability of the links - weight lists
 	Multimap<Integer, Timestamp> linkHistory = ArrayListMultimap.create();
+	public Hashtable<Integer, Float> weightList = new Hashtable<Integer, Float>();
 
+	
 	// to get beacon count in last few mins..
 	Multimap<Integer, Timestamp> beaconHistory = ArrayListMultimap.create();
-	// public ArrayList<Integer> weightList = new ArrayList<Integer>();
-
+	
 	
 	/** ** Cryptography **** */
 	static int CRYPT_BIT_SIZE = 512; // can use --> 512 bits or 1024 bits or 2048 bits
@@ -1105,6 +1106,7 @@ public class Node {
 			String rcvdMsg = new String(pktObj.getPayload().toByteArray());
 			this.dumpNodeStatus("Received Data: "+rcvdMsg, 4);
 			
+			this.pRecvd++;
 			/*System.out.println("Introducing processing delay");
 			try {
 				Thread.sleep(2500);
@@ -1120,8 +1122,8 @@ public class Node {
 			
 			// this.dumpNodeStatus("Received message by "+this.ipAddress+" : \n" +rcvdMsg);
 			
-			//if(this.attackType==AttackType.BLACK_HOLE)
-			if(canSend()){
+			
+			if(canSend()){			// Simulating Byzantine behavior
 				DataPacket pkt = ((DataPacket) pktObj).getClone();
 				multicastPacket(pkt);
 			}
@@ -1141,14 +1143,19 @@ public class Node {
 			
 			if(pkt.percRate.size()>1){
 				if(Math.abs(pkt.percRate.get(0) - this.calcPercvdDataRate())>14){
+					this.penalizeLink(this.upStreamNode);
+					System.out.println(this.getIpAddress()+"I will initiate new route discovery procedure");
 					this.createSignSend(PacketType.TREE_PRUNE);
 					this.initiateRouteDiscovery();
+					return;
 				}
+				
 			}
 			pkt.percRate.add(this.calcPercvdDataRate());
+			System.out.println(this.getIpAddress()+"Mrate packet size"+pkt.percRate.size());
 			System.out.println("current Mrate values");
 			for (Iterator<Integer> itr = pkt.percRate.iterator(); itr.hasNext();) {
-				System.out.println("mrate packet received by "+this.getIpAddress()+"=>"+itr.next());
+				System.out.println("=>"+itr.next());
 			}
 			
 			multicastPacket(pkt);
@@ -1349,35 +1356,6 @@ public class Node {
 		}
 	}
 
-	
-	public void printLinkHistory() {
-		System.out.println("\nLink history");
-
-		Timestamp ts = getTimeStamp(Calendar.MINUTE, -1);
-		int cnt = 0;
-		Set keySet = this.linkHistory.keySet();
-		Iterator keyIterator = keySet.iterator();
-		while (keyIterator.hasNext()) {
-			cnt = 0;
-			Object key = keyIterator.next();
-			System.out.print("Key: " + key + ", ");
-			Collection values = (Collection) this.linkHistory
-					.get((Integer) key);
-			Iterator valuesIterator = values.iterator();
-			while (valuesIterator.hasNext()) {
-				Timestamp tsn = (Timestamp) valuesIterator.next();
-				if (tsn.after(ts)) {
-					cnt++;
-				}
-				System.out.print("Value: " + tsn + ". ");
-			}
-			System.out.print("Count :" + cnt);
-			System.out.print("\n");
-		}
-		System.out.println(getTimeStamp());
-		System.out.println(getTimeStamp(Calendar.MINUTE, -1));
-
-	}
 
 	public int calcPercvdDataRate() {
 		// packets per minute
@@ -1406,7 +1384,6 @@ public class Node {
 		// Runs task after expiration of timer
 		
 		
-		
 		t.schedule(new TimerTask() {
 			@Override
 			public void run() {
@@ -1420,30 +1397,100 @@ public class Node {
 
 						System.out.println("selecting shortest route among RREPs");
 
-						int min = 999;
-						RRepPacket dpkt = null;
+						RRepPacket sel_pkt = null;
 						Object dpt[] = rrepTmpList.toArray();
+						
+						
+						int minHop_faultFreeLinks = 999;
+						int minHop_newLinks = 999;
+						int minHop_faultyLinksMin = 999;
+						
+						RRepPacket sel_pkt_faultFreeLinks = null;
+						RRepPacket sel_pkt_newLinks = null;
+						RRepPacket sel_pkt_faultyLinksMin = null;
+						
+						
+						float minWeight=2;
+						
 						for (int i = 0; i < dpt.length; i++) {
-							int prevNodeIp = ((RRepPacket) dpt[i]).nodePtr.get(((RRepPacket) dpt[i]).nodePtr.size() - 1).ipAddress;
+							RRepPacket tmpPkt = (RRepPacket) dpt[i];
+							int prevNodeIp = tmpPkt.nodePtr.get(tmpPkt.nodePtr.size() - 1).ipAddress;
+							
 							if (NodeTable.getNode(prevNodeIp).type == NodeType.SOURCE) {
-								dpkt = ((RRepPacket) dpt[i]).getClone();
+								minHop_faultFreeLinks = 0;
+								sel_pkt_faultFreeLinks = tmpPkt.getClone();
 								break;
 							}
-							if (min > ((RRepPacket) dpt[i]).hops) {
-								min = ((RRepPacket) dpt[i]).hops;
-								dpkt = ((RRepPacket) dpt[i]).getClone();
+							
+							if(getLinkWeight(prevNodeIp)==0){
+								System.out.println(prevNodeIp+"Not faultyyy");
+								//faultFreeLinks.add(tmpPkt);
+								if (minHop_faultFreeLinks > tmpPkt.hops) {
+									minHop_faultFreeLinks = tmpPkt.hops;
+									sel_pkt_faultFreeLinks = tmpPkt.getClone();
+								}
+							}
+							else if(getLinkWeight(prevNodeIp)==-1){
+								//System.out.println(prevNodeIp+"New Link");
+								if (minHop_newLinks > tmpPkt.hops) {
+									minHop_newLinks = tmpPkt.hops;
+									sel_pkt_newLinks = tmpPkt.getClone();
+								}
+							}
+								
+							else if(getLinkWeight(prevNodeIp)>0 && getLinkWeight(prevNodeIp)<=minWeight){
+								//System.out.println(prevNodeIp+"faulty Link");
+								if(getLinkWeight(prevNodeIp)<minWeight){
+									minWeight = getLinkWeight(prevNodeIp);
+									if (minHop_faultyLinksMin > tmpPkt.hops) {
+										minHop_faultyLinksMin = tmpPkt.hops;
+										sel_pkt_faultyLinksMin = tmpPkt.getClone();
+									}
+								}
 							}
 						}
-
+						
+						if(minHop_faultFreeLinks==0){
+							//System.out.println("selected source");
+							sel_pkt = sel_pkt_faultFreeLinks.getClone();
+						}
+						else if(minHop_faultFreeLinks<999 && minHop_newLinks<999){
+							if(minHop_faultFreeLinks<=minHop_newLinks){
+								sel_pkt = sel_pkt_faultFreeLinks.getClone();
+								//System.out.println("selected fault free link");
+							}
+							else{
+								//System.out.println("selected new link");
+								sel_pkt = sel_pkt_newLinks.getClone();
+							}
+						}
+						else if(minHop_faultFreeLinks<999){
+							//System.out.println("selected fault free link");
+							sel_pkt = sel_pkt_faultFreeLinks.getClone();
+						}
+						else if(minHop_newLinks<999){
+							//System.out.println("selected new link");
+							sel_pkt = sel_pkt_newLinks.getClone();
+						}
+						else if(minHop_faultyLinksMin<999){
+							//System.out.println("selected faulty link");
+							sel_pkt = sel_pkt_faultyLinksMin.getClone();
+						}
+						
+						
 						System.out.println("selected shortest route");
 						// dumpNodeStatus("Shortest packet is" + dpkt);
 						// dumpNodeStatus("Unicasting to "+ dpkt.senderIp);
-
+						
+						
+						
+						// add link to weight list
+						addLinkToList(sel_pkt.nodePtr.get(sel_pkt.nodePtr.size()-1).ipAddress);
 						
 						if(type==NodeType.NON_MEMBER_NODE){
 							setNodeType(NodeType.MEMBER_NODE);
 						}
-						createSignSend(PacketType.MACT, dpkt.senderIp,dpkt.hops, dpkt.nodePtr);
+						createSignSend(PacketType.MACT, sel_pkt.senderIp,sel_pkt.hops, sel_pkt.nodePtr);
 						
 						rrepTmpList.clear();
 						
@@ -1452,16 +1499,9 @@ public class Node {
 						beaconThread = new Timer("beaconThread");
 						startThread(beaconThread,Node.beaconRate);
 						
-						/*if(beacon_Timer!=null){
-							beacon_Timer.cancel();
-						}
-						beacon_Timer = new Timer("beacon_Timer");
-						startTimer(beacon_Timer,4*Node.beaconRate);*/
 
-						
 						Connected = true;
 						attempts = 0;
-						// RA_Timer.cancel();
 					}
 
 					else {
@@ -1662,11 +1702,6 @@ public class Node {
 		rcvdMsgs.put(msgSeq, hopCount);
 	}
 
-	public int getMsgEntry(long msgSeq, int hopCount) {
-		// this.dumpNodeStatus("msgSeq->"+msgSeq+"\nnewHopCount->"+hopCount+"  OldHopCount->"+rcvdMsgs.get(msgSeq));
-		return rcvdMsgs.get(msgSeq);
-	}
-
 	public void updateMsgEntry(long msgSeq, int hopCount) {
 		rcvdMsgs.remove(msgSeq);
 		rcvdMsgs.put(msgSeq, hopCount);
@@ -1695,6 +1730,33 @@ public class Node {
 	}
 
 	
+	
+	public void addLinkToList(int linkId) {
+		if(this.getLinkWeight(linkId)==-1){
+			this.weightList.put(linkId,(float)0);
+		}
+	}
+
+	public float getLinkWeight(int linkId) {
+		float flag = -1;
+		if (this.weightList.get(linkId) != null) {
+			flag = this.weightList.get(linkId);
+		}
+		return flag;
+	}
+	
+	public void penalizeLink(int linkId) {
+		float newWeight;
+		if (this.weightList.get(linkId) != null) {
+			newWeight = this.weightList.get(linkId);
+			newWeight = (float) (newWeight + 0.10);
+			if(newWeight>=1){
+				newWeight = 1;		// faulty link - max value
+			}
+			this.weightList.remove(linkId);
+			this.weightList.put(linkId,newWeight);
+		}
+	}
 	
 	public boolean canSend() {
 		// to simulate the byzantine attacks

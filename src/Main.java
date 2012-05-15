@@ -6,6 +6,8 @@ import packet_pkg.*;
 //Importing libraries
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -19,14 +21,12 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
     // private JLabel Tag;
 	
 	static Main mainFrame;
-	MenuBar mbar=new MenuBar();
-	Menu menu;
-	MenuItem mi_help,mi_aboutUs,mi_exit;
 	
 	// Threads used
 	Timer tplgyThread = new Timer("tplgyThread");
-	Timer grpHelloThread = new Timer("grpHelloThread");
 	Timer rchbltyThread = new Timer("rchbltyThread");
+	
+	Timer grpHelloThread = new Timer("grpHelloThread");
 	
 	Timer dataPktThread = null;
 	Timer mRatePktThread = new Timer("mRatePktThread");
@@ -36,11 +36,8 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 
 	JToggleButton jtbtn_range,jtbtn_data,jtbtn_blkHole;
 	
-	JButton jbtn_createNode,jbtn_getReachableNodes,jbtn_simSetup,jbtn_genTplgy,jbtn_exit;
-	JButton jbtn_monitorNode;
-	
-	JButton jbtn_rreq,jbtn_treePrune;
-	
+	JButton jbtn_simSetup,jbtn_genTplgy,jbtn_grpForm,jbtn_rreq,jbtn_treePrune,jbtn_monitorNode,jbtn_save,jbtn_exit;
+
 	
 	JComboBox jcbx_selNode,jc2;
 	
@@ -64,13 +61,13 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 
 	
 	
+	//int xPosArray[] = {40,90,140,190,240,290,340,390,440,490,540,590,640,690,740,790,840};
+	//int yPosArray[] = {40,75,110,145,180,215,250,285,320,355,390,425,460,495,530};
+	
+	
 	int xPosArray[] = {40,90,140,190,240,290,340,390,440,490,540,590,640,690,740,790,840};
-	int yPosArray[] = {40,75,110,145,180,215,250,285,320,355,390,425,460,495,530};
-	
-	
-	//int xPosArray[] = {40,70,100,130,160,190,220,250,280,310,340,370,400,430,460,490,520,550,580,610,640,670,700,730,760,790,820,850,880};
-	//int yPosArray[] = {40,70,100,130,160,190,220,250,280,310,340,370,400,430,460,490,520};
-	
+	int yPosArray[] = {40,75,110,145,180,215,250,285,320,355,390,425,460,495,530,565,600,635};
+
 	int placedPos[][]=new int[100][100];
 	
 	
@@ -82,7 +79,7 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		//this.setIconImage(Toolkit.getDefaultToolkit().getImage("images/livewire2.gif"));
 	   	//this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		addMenuItems();
+		//addMenuItems();
 		addControls();
 	   
 		showTopology();
@@ -96,33 +93,16 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		}
 	}
 	
-	public void addMenuItems(){
-		setMenuBar(mbar);
-
-		menu=new Menu("HELP");
-		mi_help=new MenuItem("How to Run");
-		mi_exit=new MenuItem("Exit");
-		mi_aboutUs=new MenuItem("About Us");
-			
-		mi_help.addActionListener(this);
-		mi_aboutUs.addActionListener(this);
-		mi_exit.addActionListener(this);
-		    
-		menu.add(mi_help);
-		menu.add(mi_aboutUs);
-		menu.add(mi_exit);
-		mbar.add(menu);
-	}
 	
 	
 	public void addControls(){
-	    jbtn_createNode=new JButton("Create Node");
-	   
+	    
 	    jtbtn_range=new JToggleButton("Show Node Range");
 	    
 	    jbtn_simSetup=new JButton("Simulation Setup");
 	    jbtn_genTplgy=new JButton("Generate Topology");
-	  
+	    jbtn_grpForm=new JButton("Group Formation");
+	    
 	    jtbtn_data=new JToggleButton("Start Sending Data");
 	    
 	    jcbx_selNode=new JComboBox();
@@ -131,6 +111,7 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 	    jbtn_treePrune=new JButton("Tree Prune");
 	    jtbtn_blkHole = new JToggleButton("Make it Black Hole");
 	    
+	    jbtn_save=new JButton("Save Simulation Results");
 	    jbtn_exit=new JButton("EXIT");
 	    
 	    
@@ -142,36 +123,35 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		btn_fgColor = Color.white;
 		btn_fontSize = 10;
 		
-	    jbtn_createNode.setBackground(btn_bgColor);
-	    jbtn_createNode.setForeground(btn_fgColor);
-	    jbtn_createNode.setFont(new Font(null,Font.BOLD,btn_fontSize));
-	    jbtn_createNode.addActionListener(this);
 	  
-	    
-
 
 		jtbtn_range.setBackground(btn_bgColor);
-		jtbtn_range.setForeground(btn_fgColor);
+		jtbtn_range.setForeground(Color.white);
 		jtbtn_range.setFont(new Font(null,Font.BOLD,btn_fontSize));
 		jtbtn_range.addItemListener(this);
 		
 		
 		jbtn_simSetup.setBackground(Color.black);
-		jbtn_simSetup.setForeground(btn_fgColor);
+		jbtn_simSetup.setForeground(Color.white);
 		jbtn_simSetup.setFont(new Font(null,Font.BOLD,btn_fontSize));
 		jbtn_simSetup.addActionListener(this);
 		
 		
 		jbtn_genTplgy.setBackground(Color.black);
-		jbtn_genTplgy.setForeground(btn_fgColor);
+		jbtn_genTplgy.setForeground(Color.gray);
 		jbtn_genTplgy.setFont(new Font(null,Font.BOLD,btn_fontSize));
 		jbtn_genTplgy.setEnabled(false);
 		jbtn_genTplgy.addActionListener(this);
 
-		
+		jbtn_grpForm.setBackground(Color.black);
+		jbtn_grpForm.setForeground(Color.gray);
+		jbtn_grpForm.setFont(new Font(null,Font.BOLD,btn_fontSize));
+		jbtn_grpForm.setEnabled(false);
+		jbtn_grpForm.addActionListener(this);
+
 		
 		jtbtn_data.setBackground(btn_bgColor);
-		jtbtn_data.setForeground(btn_fgColor);
+		jtbtn_data.setForeground(Color.gray);
 		jtbtn_data.setFont(new Font(null,Font.BOLD,btn_fontSize));
 		jtbtn_data.setEnabled(false);
 		jtbtn_data.addItemListener(this);
@@ -190,7 +170,7 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		
    		
    		jbtn_treePrune.setBackground(btn_bgColor);
-   		jbtn_treePrune.setForeground(Color.white);
+   		jbtn_treePrune.setForeground(Color.gray);
    		jbtn_treePrune.setFont(new Font(null,Font.BOLD,btn_fontSize));
    		jbtn_treePrune.setEnabled(false);
    		jbtn_treePrune.addActionListener(this);
@@ -204,12 +184,20 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		
    		
    		jtbtn_blkHole.setBackground(btn_bgColor);
-   		jtbtn_blkHole.setForeground(btn_fgColor);
+   		jtbtn_blkHole.setForeground(Color.white);
    		jtbtn_blkHole.setFont(new Font(null,Font.BOLD,btn_fontSize));
    		jtbtn_blkHole.setEnabled(false);
    		jtbtn_blkHole.addItemListener(this);
 			
 
+   		
+   		jbtn_save.setBackground(btn_bgColor);
+   		jbtn_save.setForeground(Color.gray);
+   		jbtn_save.setFont(new Font(null,Font.BOLD,btn_fontSize));
+   		jbtn_save.setEnabled(false);
+   		jbtn_save.addActionListener(this);
+		
+   		
    		jbtn_exit.setBackground(Color.red);
 		jbtn_exit.setForeground(btn_fgColor);
 		jbtn_exit.setFont(new Font(null,Font.BOLD,btn_fontSize));
@@ -228,13 +216,13 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		btn_height=25;
 		
    		
-		jbtn_createNode.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
    		jtbtn_range.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_yPos+=btn_height+5;
    		
    		jbtn_simSetup.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
    		jbtn_genTplgy.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
-
-   		jtbtn_data.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
+   		jbtn_grpForm.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_yPos+=btn_height+5;
+   		
+   		jtbtn_data.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_yPos+=btn_height+5;
    		jcbx_selNode.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_yPos+=btn_height+5;
    		jbtn_monitorNode.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
    		
@@ -242,13 +230,14 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
    		jbtn_treePrune.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
    		
    		jtbtn_blkHole.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);			btn_yPos+=btn_height+5;
-   		 		
+
+   		jbtn_save.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_yPos+=btn_height+5;
    		jbtn_exit.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_yPos+=btn_height+5;
    		
    		
-   		btn_xPos=10;	
-		btn_yPos=600;
-		btn_width=50;
+   		btn_xPos=20;	
+		btn_yPos=630;
+		btn_width=40;
 		btn_height=25;
 		
    		jlb_posX.setBounds(btn_xPos,btn_yPos,btn_width,btn_height);				btn_xPos+=btn_width+20;
@@ -260,8 +249,8 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
    		jsldr_movNodY = new JSlider();
    		
    		jsldr_movNodX.setOrientation(JSlider.VERTICAL);
-   		jsldr_movNodX.setMinimum(50);
-   		jsldr_movNodX.setMaximum(880);
+   		jsldr_movNodX.setMinimum(40);
+   		jsldr_movNodX.setMaximum(860);
    		jsldr_movNodX.setMajorTickSpacing(100);
    		jsldr_movNodX.setMinorTickSpacing(25);
    		jsldr_movNodX.setPaintTicks(true);
@@ -270,8 +259,8 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
    		jsldr_movNodX.addChangeListener(this);
    		
    		jsldr_movNodY.setOrientation(JSlider.VERTICAL);
-   		jsldr_movNodY.setMinimum(50);
-   		jsldr_movNodY.setMaximum(550);
+   		jsldr_movNodY.setMinimum(40);
+   		jsldr_movNodY.setMaximum(640);
    		jsldr_movNodY.setMajorTickSpacing(100);
    		jsldr_movNodY.setMinorTickSpacing(25);
    		jsldr_movNodY.setPaintTicks(true);
@@ -279,27 +268,29 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
    		jsldr_movNodY.setEnabled(false);
    		jsldr_movNodY.addChangeListener(this);
    		
-   		jsldr_movNodX.setBounds(10,400,60,200);
-   		jsldr_movNodY.setBounds(70,400,60,200);
+   		jsldr_movNodX.setBounds(10,430,60,200);
+   		jsldr_movNodY.setBounds(70,430,60,200);
    		
    		
    		
    		
    		
    		// Add buttons to the frame
-   		this.add(jbtn_createNode);
    		this.add(jtbtn_range);
    		
    		this.add(jbtn_simSetup);
    		this.add(jbtn_genTplgy);
-   		this.add(jtbtn_data);
+   		this.add(jbtn_grpForm);
    		
+   		this.add(jtbtn_data);
    		
    		this.add(jcbx_selNode);
    		this.add(jbtn_monitorNode);
    		this.add(jbtn_rreq);
    		this.add(jbtn_treePrune);
    		this.add(jtbtn_blkHole);
+   		
+   		this.add(jbtn_save);
    		this.add(jbtn_exit);
    		
    		
@@ -316,10 +307,11 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		Topology tp = new Topology();
 		
 		tplgyFrame=new JFrame("Network Topology");
+		tplgyFrame.setIconImage(Toolkit.getDefaultToolkit().getImage("images/logo.png"));
 		tplgyFrame.getContentPane().add(tp);
 		tplgyFrame.setBackground(Color.white);
 		tplgyFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		tplgyFrame.setBounds(210,10,950,650);
+		tplgyFrame.setBounds(195,5,1100,700);
 		tplgyFrame.setResizable(false);
 		tplgyFrame.setVisible(true);
 	}
@@ -330,9 +322,9 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		//new SplashScreen();
 
 		mainFrame = new Main();
-		mainFrame.setIconImage(Toolkit.getDefaultToolkit().getImage("images/livewire2.gif"));
+		mainFrame.setIconImage(Toolkit.getDefaultToolkit().getImage("images/logo.png"));
 		mainFrame.setTitle("BSMR in Multihop Wireless Networks");
-		mainFrame.setBounds(5, 5, 200, 700); 	// mainFrame.setBounds(50,20,1200,800);
+		mainFrame.setBounds(5, 5, 180, 700); 	// mainFrame.setBounds(50,20,1200,800);
 
 		UIManager.LookAndFeelInfo lookAndFeels[] = UIManager.getInstalledLookAndFeels();
 
@@ -345,6 +337,7 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 		mainFrame.setLayout(null);
 		mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		mainFrame.setVisible(true);
+		
 	}
   
 	  
@@ -374,15 +367,18 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 					boolean canPlace = false;
 					repeat++;
 					//Generate Random indexes i and j
-					if(k<5){
+					if(k<15){
 						 i = Main.random(midX-3,midX+3);
 						 j = Main.random(midY-3,midY+3);
 					}
-					else if(k<10){
+					else if(k<30){
 						 i = Main.random(midX-5,midX+5);
 						 j = Main.random(midY-5,midY+5);
 					}
-					
+					else if(k<40){
+						 i = Main.random(midX-7,midX+7);
+						 j = Main.random(midY-7,midY+7);
+					}
 					else{
 						i = Main.random(xPosArray.length);
 						j = Main.random(yPosArray.length);
@@ -391,9 +387,7 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 						// check if place is already occupied
 					 }
 					 else if( (i+1<=xPosArray.length && placedPos[i+1][j]==1) ||
-					 		(j+1<=yPosArray.length && placedPos[i][j+1]==1) ||
-					 		(i-1>=0 && placedPos[i-1][j]==1) ||
-					 		(j-1>=0 && placedPos[i][j-1]==1) 	){
+					 		(j+1<=yPosArray.length && placedPos[i][j+1]==1)){
 						// check if next place is already occupied
 					 }
 					 else{
@@ -404,12 +398,8 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 						placedPos[i][j]=1;
 						repeat=0;
 						n1 = new Node(NodeType.NON_MEMBER_NODE,xPosArray[i],yPosArray[j]);
-					//	tplgyFrame.repaint();
-					//	System.out.println("ip="+n1.getIpAddress());
+						
 						jcbx_selNode.addItem(n1.getIpAddress());
-						
-						
-						
 						
 						
 						k++;
@@ -475,7 +465,7 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 					k++;
 				}
 				if(repeat>10){
-					System.out.println("cant place more nodes..");
+					System.out.println("No Space for More Nodes");
 					break;
 				}
 				
@@ -487,67 +477,36 @@ public class Main extends JFrame implements ActionListener, ItemListener, Change
 @Override
 public void actionPerformed(ActionEvent ae) {
 	
-	if(ae.getSource()==jbtn_createNode)
-	{
-		int i=0,j=0;
-		while(true){
-			boolean canPlace = false;	
-			//Generate Random indexes i and j
-			 i = Main.random(xPosArray.length);
-			 j = Main.random(yPosArray.length);
-
-			 
-			 // check if already placed
-			 if(placedPos[i][j]==1){
-				
-			 }
-			 else if( (i+1<=xPosArray.length && placedPos[i+1][j]==1) ||
-			 		(j+1<=yPosArray.length && placedPos[i][j+1]==1) ||
-			 		(i-1>=0 && placedPos[i-1][j]==1) ||
-			 		(j-1>=0 && placedPos[i][j-1]==1) 	){
-				
-			 }
-			 else{
-				 canPlace = true;
-			 }
-			 
-			if(canPlace){
-				placedPos[i][j]=1;
-				n1 = new Node(NodeType.NON_MEMBER_NODE,xPosArray[i],yPosArray[j]);
-				//System.out.println("ip="+n1.getIpAddress());
-				jcbx_selNode.addItem(n1.getIpAddress());
-				break;
-			}
-			
-				
-		}
-
-
-		for(int i1=0;i1<Node.totalNodes;i1++){
-			NodeTable.getNode(i1+1).findReachableNodes();
-		}
-
-		
-    }
-
-
-	
 	if (ae.getSource() == jbtn_simSetup) {
+		jbtn_simSetup.setForeground(Color.gray);
 		jbtn_simSetup.setEnabled(false);
 		SimSetup simSetup = new SimSetup();
 		//jbtn_startSim.setEnabled(true);
 	}
 	
 	if (ae.getSource() == jbtn_genTplgy) {
+		jbtn_genTplgy.setForeground(Color.gray);
 		jbtn_genTplgy.setEnabled(false);
-		
 		genInitialTopology();
-			
+		
+		jbtn_grpForm.setForeground(Color.white);
+		jbtn_grpForm.setEnabled(true);
+		jtbtn_data.setForeground(Color.white);
+		jtbtn_data.setEnabled(true);
+		jbtn_save.setForeground(Color.white);
+		jbtn_save.setEnabled(true);
+		
 		startThread(grpHelloThread, 9000);
 		startThread(rchbltyThread, 9000);
 
-		jtbtn_data.setEnabled(true);
-		//jbtn_startData.setEnabled(true);
+	}
+	
+	
+	if (ae.getSource() == jbtn_grpForm) {
+		//jbtn_grpForm.setEnabled(false);
+
+		int rd = Main.random(2, Node.nwSize);
+		NodeTable.getNode(rd).initiateRouteDiscovery();
 	}
 	
 		
@@ -563,10 +522,13 @@ public void actionPerformed(ActionEvent ae) {
 	    	  jbtn_rreq.setForeground(Color.gray);
 	    	  jbtn_rreq.setEnabled(false);
 	    	  
-	    	  
 	    	  jsldr_movNodX.setEnabled(false);
 	    	  jsldr_movNodY.setEnabled(false);
+	    	  
+	    	  jbtn_treePrune.setForeground(Color.gray);
 	    	  jbtn_treePrune.setEnabled(false);
+	    	  
+	    	  jtbtn_blkHole.setText("Black Hole");
 	    	  this.jtbtn_blkHole.setEnabled(false);
 			}
 	      else{
@@ -579,12 +541,14 @@ public void actionPerformed(ActionEvent ae) {
     		  if(!NodeTable.getNode(indx).Connected){
     			  jbtn_rreq.setForeground(Color.white);
         		  jbtn_rreq.setEnabled(true);
+        		  jbtn_treePrune.setForeground(Color.gray);
         		  jbtn_treePrune.setEnabled(false);
     		  }
     		  else{
     			  if(NodeTable.getNode(indx).getNodeType()==NodeType.TREE_NODE){
     				  jbtn_rreq.setForeground(Color.white);
             		  jbtn_rreq.setEnabled(true);
+            		  jbtn_treePrune.setForeground(Color.gray);
             		  jbtn_treePrune.setEnabled(false);
     			  }
     			  else{
@@ -593,14 +557,24 @@ public void actionPerformed(ActionEvent ae) {
     			  }
     			  
     			  if(chkCanPrune(indx)){
+    				  jbtn_treePrune.setForeground(Color.white);
     				  jbtn_treePrune.setEnabled(true);
     			  }
     			  else{
+    				  jbtn_treePrune.setForeground(Color.gray);
     				  jbtn_treePrune.setEnabled(false);
     			  }
     		  }
     		  
-
+    		  if(NodeTable.getNode(indx).attackType==AttackType.BLACK_HOLE){
+    			  jtbtn_blkHole.setSelected(true);
+    			  jtbtn_blkHole.setText("Undo Black Hole");
+    		  }
+    		  else{
+    			  jtbtn_blkHole.setSelected(false);
+    			  jtbtn_blkHole.setText("Make it Black Hole");
+    		  }
+    		  
 	    	  this.jtbtn_blkHole.setEnabled(true); 
     		  
     		  // if(NodeTable.getNode(indx).getNodeType() == NodeType.NON_MEMBER_NODE){
@@ -623,23 +597,19 @@ public void actionPerformed(ActionEvent ae) {
 	
 	if(ae.getSource()==jbtn_monitorNode){
 	      int indx=(Integer)jcbx_selNode.getSelectedIndex();
-	   
-			//NodeTable.getNode(indx).findReachableNodes();
-			//NodeTable.getNode(indx).getReachableNodes();
-	      
 	      NodeTable.getNode(indx).setNodeMonitorVisibility(true);
-	     // NodeTable.getNode(indx).dumpNodeStatus("Hello..", 1);
+	   
 	      
 	      
-
-			//int indx=(Integer)jcbx_selNode.getSelectedIndex();
-			
-		//NodeTable.getNode(indx).printLinkHistory();
-	     
-	   		
+	      System.out.println(indx+"=>Data Rate: "+NodeTable.getNode(indx).calcPercvdDataRate());
 	      
-		System.out.println(indx+"=>Data Rate: "+NodeTable.getNode(indx).calcPercvdDataRate());
-		
+	      
+	      Enumeration keys = NodeTable.getNode(indx).weightList.keys();
+	        while (keys.hasMoreElements()) {
+	            Object key = keys.nextElement();
+	            System.out.println(" weight of link :" + key + " is: " + NodeTable.getNode(indx).weightList.get(key));
+	        }
+	    
 	}
 	
 	
@@ -654,6 +624,8 @@ public void actionPerformed(ActionEvent ae) {
 	    else if(NodeTable.getNode(indx).getNodeType()==NodeType.TREE_NODE){
 	    	NodeTable.getNode(indx).setNodeType(NodeType.MEMBER_NODE);
 	    }
+	    
+	    jbtn_rreq.setForeground(Color.gray);
 	    jbtn_rreq.setEnabled(false);
     }
 	
@@ -668,36 +640,32 @@ public void actionPerformed(ActionEvent ae) {
 		
 		NodeTable.getNode(indx).setNodeType(NodeType.NON_MEMBER_NODE);
 		NodeTable.getNode(indx).Connected=false;
+		
+		jbtn_treePrune.setForeground(Color.gray);
 		jbtn_treePrune.setEnabled(false);
-	}
-	
-	
-	if(ae.getSource()==mi_help)
-	{
 		
-		//this.generateValidPositions();		// No need in the final project code
 		
-	}
-	
-	
-	if(ae.getSource()==mi_aboutUs){
+		
 		
 		//startThread(mRatePktThread,500);
 		//genMRate();
-		NodeTable.getNode(1).createSignSend(PacketType.MRATE);
+	
+		
+		// NodeTable.getNode(1).createSignSend(PacketType.MRATE);
 		
 		
-		/*		// remove comment later
-		if(this.abtUsFrame!=null){
-			this.abtUsFrame.dispose();
-		}
-		this.abtUsFrame = new AboutUs();
-		*/
 	}
 	
 	
 	
-	if(ae.getSource()==jbtn_exit || ae.getSource()==mi_exit){
+	if(ae.getSource()==jbtn_save){
+		// for summary
+		int indx=(Integer)jcbx_selNode.getSelectedIndex();
+		System.out.println("Total Sent="+Node.pSent+"==>Received by me is:"+NodeTable.getNode(indx).pRecvd);
+    }
+	
+	
+	if(ae.getSource()==jbtn_exit){
 		System.exit(0);
 		//new CloseDialog(new JFrame(), "Alert!", "Do you really want to exit ?");
     }
@@ -769,7 +737,11 @@ public void actionPerformed(ActionEvent ae) {
 	}
 
 	
-	public void startThread(Timer t,int milSec){
+	public void startThread(Timer t, int milSec) {
+		startThread(t,0,milSec);
+	}
+	
+	public void startThread(Timer t,int delay, int milSec){
 		t.scheduleAtFixedRate(new TimerTask(){
 			@Override
 			public void run() {
@@ -786,10 +758,10 @@ public void actionPerformed(ActionEvent ae) {
 				}
 				else if(curThreadName.equals("dataPktThread")){
 					NodeTable.getNode(1).createSignSend(PacketType.DATA_PKT);
+					Node.pSent++;
 				}
 			}
-        }, 0,milSec);
-		
+        }, delay,milSec);
 	}
 	
 	
@@ -848,14 +820,14 @@ public void actionPerformed(ActionEvent ae) {
 	public void generateValidPositions(){
 		int PAD = 40;
 		int PAD2 = (int) (PAD * 1.5);
-		int PAD3 = (int) (PAD * 2.5);
+		int PAD3 = (int) (PAD * 1.5);
 		n1 = new Node(NodeType.SOURCE,400,400);
 
 		
 		int i=0,j=0;
 		int x,y;
-		int xInc = 30;
-		int yInc = 30;
+		int xInc = 50;
+		int yInc = 35;
 		String xStr = "int xPosArray[] = {"+PAD;
 		String yStr = "int yPosArray[] = {"+PAD;
 		

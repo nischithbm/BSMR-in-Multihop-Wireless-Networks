@@ -28,8 +28,8 @@ class SimSetup extends JFrame implements ActionListener, ItemListener{
 	
 	JLabel jlb_simSetup1,jlb_simSetup2;
 	
-	JLabel jlb_gif1,jlb_gif2;
-	ImageIcon ii_gif;
+	JLabel jlb_gif1,jlb_gif2,jlb_setting;
+	ImageIcon ii_gif,ii_setting;
 
 	JLabel jlb_nwSize,jlb_grpSize,jlb_trRange,jlb_advSize;
 	JTextField jtxt_nwSize,jtxt_grpSize,jtxt_trRange;
@@ -47,7 +47,7 @@ class SimSetup extends JFrame implements ActionListener, ItemListener{
 	}
 
 	public void windowSettings(){
-		this.setIconImage(Toolkit.getDefaultToolkit().getImage("images/livewire2.gif"));
+		this.setIconImage(Toolkit.getDefaultToolkit().getImage("images/logo.png"));
 		this.setTitle ("Simulation Setup");
 		this.setBounds(300,100,400, 500);	
 		
@@ -76,10 +76,13 @@ class SimSetup extends JFrame implements ActionListener, ItemListener{
 		jlb_simSetup2 = new JLabel("Setup");
 		
 		ii_gif = new ImageIcon("images/aa.gif");
+		ii_setting = new ImageIcon("images/Setting-icon.png");
 		
 		jlb_gif1 = new JLabel("",ii_gif,JLabel.HORIZONTAL);
 		jlb_gif2 = new JLabel("",ii_gif,JLabel.HORIZONTAL);
 		
+		
+		jlb_setting = new JLabel("",ii_setting,JLabel.HORIZONTAL);
 		
 		jlb_nwSize = new JLabel("Network Size");
 		jlb_grpSize = new JLabel("Group Size");
@@ -136,7 +139,8 @@ class SimSetup extends JFrame implements ActionListener, ItemListener{
 		jtxt_grpSize.setDocument(new IntegerDocument());
 		jtxt_trRange.setDocument(new IntegerDocument());
 		
-
+		jtxt_nwSize.setText("50");
+		jtxt_trRange.setText("50");
 		
 		jcb_advSize.setFont(new Font(null,Font.BOLD,fontSize));
 		jcb_advSize.addItem("Select");
@@ -171,6 +175,7 @@ class SimSetup extends JFrame implements ActionListener, ItemListener{
 		jlb_gif1.setBounds(0, 0,100,100);
 		jlb_gif2.setBounds(295, 0,100,100);
 		
+		jlb_setting.setBounds(340, 420,50,50);
 		
 		xPos=40;	
 		yPos=140;
@@ -228,6 +233,8 @@ class SimSetup extends JFrame implements ActionListener, ItemListener{
 		
 		this.add(jlb_gif1);
 		this.add(jlb_gif2);
+		this.add(jlb_setting);
+		
 		
 		this.add(jlb_nwSize);
 		//this.add(jlb_grpSize);
@@ -271,45 +278,39 @@ class SimSetup extends JFrame implements ActionListener, ItemListener{
 			Node.nwSize = Integer.parseInt(str);
 			
 			
+			
 			str = jtxt_trRange.getText();
 			if(str.equals("")){
 				str = "50";
 			}
-				
-			Node.tRange = Integer.parseInt(str);
+			
+			int val = Integer.parseInt(str);
+			if(val<50){
+				val = 50; 	// set minimum value
+			}
+			else if(val>80){
+				val = 80; 	// set maximum value
+			}
+			Node.tRange = val;
 			
 			
-			
+			Main.mainFrame.jbtn_genTplgy.setForeground(Color.white);
 			Main.mainFrame.jbtn_genTplgy.setEnabled(true);
 			
 			this.dispose();
 	    }
 		
 		if(ae.getSource()==jbtn_cancel){
+			Main.mainFrame.jbtn_simSetup.setForeground(Color.white);
 			Main.mainFrame.jbtn_simSetup.setEnabled(true);
 			this.dispose();
 	    }
-		
 	}
 
 	@Override
 	public void itemStateChanged(ItemEvent ie) {
 		
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	

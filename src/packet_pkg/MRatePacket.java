@@ -66,6 +66,9 @@ public class MRatePacket extends MultiHopPacket {
 		for(Iterator<NodeIpSign> itr=this.nodePtr.iterator();itr.hasNext();){
 			newPkt.nodePtr.add(itr.next().getClone());
          }
+		for(int k=0;k<this.percRate.size();k++){
+			newPkt.percRate.add(this.percRate.get(k));
+         }
 		
 		newPkt.hopCountAuthenticator =  this.hopCountAuthenticator;
 		newPkt.hopCountAnchor = this.hopCountAnchor;

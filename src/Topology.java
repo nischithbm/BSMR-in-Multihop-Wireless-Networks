@@ -3,6 +3,7 @@ import static java.awt.geom.AffineTransform.getTranslateInstance;
 
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -26,25 +27,21 @@ public class Topology extends JPanel{
 	
 	
 	public void paint(Graphics g) {
-		Node tmpPrevNode,tmpNode;
-		  Graphics2D g2d = (Graphics2D) g;
-		  
-		// System.out.println("Inside");
-		  // Paint background color white
-		  g2d.setColor(Color.white);
-		  g2d.fillRect(0, 0, this.getWidth(), this.getHeight());
-		  
+		Node tmpPrevNode, tmpNode;
+		Graphics2D g2d = (Graphics2D) g;
 
+		// Paint background color white
+		g2d.setColor(Color.white);
+		g2d.fillRect(0, 0, this.getWidth(), this.getHeight());
 
-		  g2d.setColor(Color.lightGray);
-		  int rangeWidth = 2 * Node.tRange;
-		  int nodeWidth = Node.nodeFillRadious;
-		
-		
-		  for(int i=0;i<Node.totalNodes;i++){
-			 
-			  tmpNode = NodeTable.getNode(i+1);
-				 g2d.setBackground(Color.white);
+		g2d.setColor(Color.lightGray);
+		int rangeWidth = 2 * Node.tRange;
+		int nodeWidth = Node.nodeFillRadious;
+
+		for (int i = 0; i < Node.totalNodes; i++) {
+
+			tmpNode = NodeTable.getNode(i + 1);
+			g2d.setBackground(Color.white);
 				 
 			 // g2d.drawLine(100, 80, 280, 100);
 			  
@@ -158,58 +155,16 @@ public class Topology extends JPanel{
 			  		
 			  		showConnectivity(g);
 			  		
-			  		/*
-			  		
-			  		if(i>0){
-			  			//g2d.drawLine(Main.nodes[i-1].getPosX(), Main.nodes[i-1].getPosY(), tmpNode.getPosX(), tmpNode.getPosY());
-			  			 tmpPrevNode = NodeTable.getNode(i);
-			  			drawArrow(g,tmpPrevNode.getPosX(), tmpPrevNode.getPosY(), tmpNode.getPosX(), tmpNode.getPosY(),Color.green,8);
-			  			//drawArrow(g, 150, 200, 400, 500);
-			  			
-			  		}
-			  		
-			  		*/
-				
-			  		//  g2d.setColor(Color.white);
-				//  g2d.fillRect(0, 0, this.getWidth(), this.getHeight());
-				 
-				 // g2d.drawString("192.168.1."+tmpNode.ipAddress, 30, 110);
-				//  g2d.drawString("( "+tmpNode.getPosX()+","+tmpNode.getPosY()+")", 40, 130);
-			
-		  
-			  		
+			  	
 		  }
 		  
 		 
-	}
-
-
-
-	// Generic function to draw a Inclined Arrow with Solid Filled Arrow Head
-	void drawArrow(Graphics g1, int x1, int y1, int x2, int y2,Color clr,int arr_siz) {
-		int ARR_SIZE = arr_siz;		// size of the arrow head
-		
-	    Graphics2D g2d = (Graphics2D) g1.create();
-
-	    double dx = x2 - x1, dy = y2 - y1;
-	    double angle = Math.atan2(dy, dx);
-	    int len = (int) Math.sqrt(dx*dx + dy*dy);
-	    
-	    
-	    AffineTransform at = getTranslateInstance(x1, y1);
-	    at.concatenate(getRotateInstance(angle));
-	    g2d.setTransform(at);
-
-	    g2d.setColor(clr);
-	    // Draw horizontal arrow starting in (0, 0)
-	    g2d.drawLine(0, 0, (int) len, 0);
-	    g2d.fillPolygon(new int[] {len, len-ARR_SIZE, len-ARR_SIZE, len},
-	                  new int[] {0, -ARR_SIZE, ARR_SIZE, 0}, 4);
+		displayInfo(g);
+		  
+		  
 	}
 
 	
-
-
 	// Generic function to draw a Inclined Arrow with Solid Filled Arrow Head
 	void showConnectivity(Graphics g1) {
 		
@@ -250,10 +205,181 @@ public class Topology extends JPanel{
 	         }
 	    }
 	    
+	}
+
+	
+	
+	void displayInfo(Graphics g1){
+		// Display information
+		 Graphics2D g2d = (Graphics2D) g1.create();
+		 int nodeWidth = Node.nodeFillRadious;
+
+		  g2d.setColor(Color.black);
+		  g2d.drawLine(this.getWidth()-215,0, this.getWidth()-215, this.getHeight());
+		  
+		 
+		  int dyPos = 40;
+		  
+		  
+		  // Node Types
+		  g2d.drawLine(this.getWidth()-215,dyPos-3, this.getWidth(), dyPos-3);
+		  g2d.setFont(new Font(null,Font.BOLD,16));
+		  g2d.drawString("Node Type", this.getWidth()-210+20 + nodeWidth+10 , dyPos+nodeWidth);
+		  g2d.drawLine(this.getWidth()-215,dyPos+25, this.getWidth(), dyPos+25);
+		  
+		  
+		  
+		  g2d.setFont(new Font(null,Font.BOLD,14));
+		  
+		  dyPos+=35;
+		  g2d.setColor(Color.red);
+		  g2d.drawOval(this.getWidth()-210+20, dyPos, nodeWidth, nodeWidth);
+		  g2d.fillOval(this.getWidth()-210+20, dyPos, nodeWidth, nodeWidth);
+		  g2d.setColor(Color.black);
+		  g2d.drawString("Source Node", this.getWidth()-210+20 + nodeWidth+25 , dyPos+nodeWidth);
+		  
+		  dyPos+=30;
+		  g2d.setColor(Color.gray);
+		  g2d.drawOval(this.getWidth()-210+20, dyPos, nodeWidth, nodeWidth);
+		  g2d.setColor(Color.black);
+		  g2d.drawString("Non Member Node", this.getWidth()-210+20 + nodeWidth+25 , dyPos+nodeWidth);
+		  
+		  dyPos+=30;
+		  g2d.setColor(Color.black);
+		  g2d.drawOval(this.getWidth()-210+20, dyPos, nodeWidth, nodeWidth);
+		  g2d.fillOval(this.getWidth()-210+20, dyPos, nodeWidth, nodeWidth);
+		  g2d.setColor(Color.black);
+		  g2d.drawString("Tree Node", this.getWidth()-210+20 + nodeWidth+25 , dyPos+nodeWidth);
+		  
+		  dyPos+=30;
+		  g2d.setColor(Color.blue);
+		  g2d.drawOval(this.getWidth()-210+20, dyPos, nodeWidth, nodeWidth);
+		  g2d.fillOval(this.getWidth()-210+20, dyPos, nodeWidth, nodeWidth);
+		  g2d.setColor(Color.black);
+		  g2d.drawString("Member Node", this.getWidth()-210+20 + nodeWidth+25 , dyPos+nodeWidth);
+		  
+		  g2d.drawLine(this.getWidth()-215,dyPos+25, this.getWidth(), dyPos+25);
+		  // Node Types End
+		
+		  
+		  
+		 
+		  
+		  
+		  g2d.setFont(new Font(null,Font.BOLD,14));
+
+		  
+		  
+		  dyPos+=80;
+		  g2d.setColor(Color.gray);
+		  g2d.drawOval(this.getWidth()-210+20, dyPos, nodeWidth, nodeWidth);
+		  
+		  g2d.setColor(Color.blue);
+		  g2d.drawArc(this.getWidth()-210+20 -11/2, dyPos-11/2, nodeWidth+11, nodeWidth+11, 30, 50);
+		  g2d.drawArc(this.getWidth()-210+20 -10/2, dyPos-10/2, nodeWidth+10, nodeWidth+10, 30, 50);
+		  
+		  g2d.drawArc(this.getWidth()-210+20 -21/2, dyPos-21/2, nodeWidth+21, nodeWidth+21, 20, 60);
+		  g2d.drawArc(this.getWidth()-210+20 -20/2, dyPos-20/2, nodeWidth+20, nodeWidth+20, 20, 60);
+		  
+		  g2d.drawArc(this.getWidth()-210+20 -31/2, dyPos-31/2, nodeWidth+31, nodeWidth+31, 10, 70);
+		  g2d.drawArc(this.getWidth()-210+20 -30/2, dyPos-30/2, nodeWidth+30, nodeWidth+30, 10, 70);
+		  
+		  g2d.setColor(Color.black);
+		  g2d.drawString("Transmitting packet", this.getWidth()-210+20 + nodeWidth+25 , dyPos+nodeWidth);
+		  
+		  
+		  
+		  dyPos+=30;
+		  g2d.setColor(Color.gray);
+		  g2d.drawOval(this.getWidth()-210+20, dyPos, nodeWidth, nodeWidth);
+		  g2d.setColor(Color.green);
+		  g2d.drawOval(this.getWidth()-210+20+4, dyPos+4, nodeWidth/2, nodeWidth/2);
+		  g2d.fillOval(this.getWidth()-210+20+4, dyPos+4, nodeWidth/2, nodeWidth/2);
+		  
+		  g2d.setColor(Color.black);
+		  g2d.drawString("Received packet", this.getWidth()-210+20 + nodeWidth+25 , dyPos+nodeWidth);
+		  
+		  
+		  
+		  dyPos+=30;
+		  g2d.setColor(Color.gray);
+		  g2d.drawOval(this.getWidth()-210+20, dyPos, nodeWidth, nodeWidth);
+		  g2d.setColor(Color.red);
+		  g2d.drawLine(this.getWidth()-210, dyPos, this.getWidth()-210+nodeWidth, dyPos+nodeWidth);
+		  g2d.drawLine(this.getWidth()-210, dyPos+nodeWidth, this.getWidth()-210+nodeWidth, dyPos);
+		  
+		 
+		  g2d.setColor(Color.black);
+		  g2d.drawString("Dropping packet", this.getWidth()-210+20 + nodeWidth+25 , dyPos+nodeWidth);
+		  
+		  g2d.drawLine(this.getWidth()-215,dyPos+25, this.getWidth(), dyPos+25);
+		  
+		  
+		  
+
+
+		  
+		  dyPos+=70;
+		  
+			
+		  g2d.setFont(new Font(null,Font.BOLD,14));
+		  
+		  dyPos+=35;
+		  g2d.setColor(Color.black);
+		  g2d.drawOval(this.getWidth()-210+20-1, dyPos-1, nodeWidth+2, nodeWidth+2);
+		  g2d.drawOval(this.getWidth()-210+20+1, dyPos+1, nodeWidth-2, nodeWidth-2);
+		  g2d.fillOval(this.getWidth()-210+20+1, dyPos+1, nodeWidth-2, nodeWidth-2);
+		  g2d.setColor(Color.black);
+		  g2d.drawString("Black Hole", this.getWidth()-210+20 + nodeWidth+20 , dyPos+nodeWidth);
+		  
+		  g2d.drawLine(this.getWidth()-215,dyPos+25, this.getWidth(), dyPos+25);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	// Generic function to draw a Inclined Arrow with Solid Filled Arrow Head
+	void drawArrow(Graphics g1, int x1, int y1, int x2, int y2,Color clr,int arr_siz) {
+		int ARR_SIZE = arr_siz;		// size of the arrow head
+		
+	    Graphics2D g2d = (Graphics2D) g1.create();
+
+	    double dx = x2 - x1, dy = y2 - y1;
+	    double angle = Math.atan2(dy, dx);
+	    int len = (int) Math.sqrt(dx*dx + dy*dy);
 	    
-	    g2d.setColor(Color.black);
-	    g2d.drawLine(0, this.getHeight()-50, this.getWidth(), this.getHeight()-50);
 	    
+	    AffineTransform at = getTranslateInstance(x1, y1);
+	    at.concatenate(getRotateInstance(angle));
+	    g2d.setTransform(at);
+
+	    g2d.setColor(clr);
+	    // Draw horizontal arrow starting in (0, 0)
+	    g2d.drawLine(0, 0, (int) len, 0);
+	    g2d.fillPolygon(new int[] {len, len-ARR_SIZE, len-ARR_SIZE, len},
+	                  new int[] {0, -ARR_SIZE, ARR_SIZE, 0}, 4);
 	}
 
 	
